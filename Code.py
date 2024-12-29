@@ -1,6 +1,7 @@
 import random
 import json
 import os
+import streamlit as st
 
 # 2024 F1 Calendar with Tracks (Updated with all races)
 tracks = [
@@ -29,7 +30,7 @@ tracks = [
 
 # 2024 F1 Drivers with team assignments
 drivers = {
-    "Max Verstappen": {"team": "Red Bull Racing", "speed": 98, "strategy": 95, "consistency": 90, "aggression": 85},
+    "Max Verstappen": {"team": "Red Bull Racing", "speed": 98, "strategy": 95, "consistency": 97, "aggression": 98},
     "Sergio Perez": {"team": "Red Bull Racing", "speed": 92, "strategy": 90, "consistency": 88, "aggression": 82},
     "Lewis Hamilton": {"team": "Mercedes", "speed": 95, "strategy": 92, "consistency": 88, "aggression": 80},
     "George Russell": {"team": "Mercedes", "speed": 93, "strategy": 89, "consistency": 85, "aggression": 77},
@@ -43,10 +44,10 @@ drivers = {
     "Lance Stroll": {"team": "Aston Martin", "speed": 85, "strategy": 80, "consistency": 78, "aggression": 72},
     "Valtteri Bottas": {"team": "Alfa Romeo", "speed": 87, "strategy": 82, "consistency": 79, "aggression": 71},
     "Guanyu Zhou": {"team": "Alfa Romeo", "speed": 84, "strategy": 80, "consistency": 77, "aggression": 70},
-    "Yuki Tsunoda": {"team": "AlphaTauri", "speed": 85, "strategy": 79, "consistency": 76, "aggression": 73},
-    "Nyck de Vries": {"team": "AlphaTauri", "speed": 82, "strategy": 76, "consistency": 75, "aggression": 68},
+    "Yuki Tsunoda": {"team": "AlphaTauri", "speed": 85, "strategy": 79, "consistency": 76, "aggression": 83},
+    "Liam Lawson": {"team": "AlphaTauri", "speed": 82, "strategy": 76, "consistency": 75, "aggression": 68},
     "Alexander Albon": {"team": "Williams", "speed": 86, "strategy": 81, "consistency": 78, "aggression": 70},
-    "Logan Sargeant": {"team": "Williams", "speed": 80, "strategy": 75, "consistency": 74, "aggression": 67}
+    "Franco Colapinto": {"team": "Williams", "speed": 90, "strategy": 75, "consistency": 74, "aggression": 77}
 }
 
 # 2024 F1 Teams with performance and reliability ratings
@@ -58,38 +59,46 @@ teams = {
     "Alpine": {"performance": 85, "reliability": 78},
     "Aston Martin": {"performance": 88, "reliability": 82},
     "Alfa Romeo": {"performance": 80, "reliability": 75},
-    "AlphaTauri": {"performance": 75, "reliability": 70},
+    "RB Visa Cash App": {"performance": 75, "reliability": 70},
     "Williams": {"performance": 70, "reliability": 68}
 }
 
 # Function to create a new driver
 def create_driver():
-    name = input("Enter your driver's name: ")
-    speed = int(input("Enter driver's speed (0-100): "))
-    strategy = int(input("Enter driver's strategy (0-100): "))
-    consistency = int(input("Enter driver's consistency (0-100): "))
-    aggression = int(input("Enter driver's aggression (0-100): "))
+    name = st.text_input("Enter your driver's name:")
+    speed = st.number_input("Enter driver's speed (0-100):", min_value=0, max_value=100)
+    strategy = st.number_input("Enter driver's strategy (0-100):", min_value=0, max_value=100)
+    consistency = st.number_input("Enter driver's consistency (0-100):", min_value=0, max_value=100)
+    aggression = st.number_input("Enter driver's aggression (0-100):", min_value=0, max_value=100)
     
-    return {name: {"team": "Custom Team", "speed": speed, "strategy": strategy, "consistency": consistency, "aggression": aggression}}
+    if st.button("Create Driver"):
+        driver = {name: {"team": "Custom Team", "speed": speed, "strategy": strategy, "consistency": consistency, "aggression": aggression}}
+        st.write(f"Your driver {name} has been created!")
+        return driver
+    return None
 
 # Function to create a new team
 def create_team():
-    name = input("Enter your team's name: ")
-    performance = int(input("Enter team's performance (0-100): "))
-    reliability = int(input("Enter team's reliability (0-100): "))
+    name = st.text_input("Enter your team's name:")
+    performance = st.number_input("Enter team's performance (0-100):", min_value=0, max_value=100)
+    reliability = st.number_input("Enter team's reliability (0-100):", min_value=0, max_value=100)
     
-    return {name: {"performance": performance, "reliability": reliability}}
+    if st.button("Create Team"):
+        team = {name: {"performance": performance, "reliability": reliability}}
+        st.write(f"Your team {name} has been created!")
+        return team
+    return None
 
 # Function to simulate a race
 def race(driver, team, track):
-    print(f"Starting the race at {track['track_name']} in {track['location']}!")
+    st.write(f"Starting the race at {track['track_name']} in {track['location']}!")
     
     # Driver and team performance for the race
     driver_skill = driver['speed'] + driver['strategy'] + driver['consistency'] + driver['aggression']
     team_performance = team['performance'] + team['reliability']
     
     race_result = random.randint(driver_skill + team_performance - 20, driver_skill + team_performance + 20)
-    print(f"Race finished! Your performance score: {race_result}")
+    st.write(f"Race finished! Your performance score: {race_result}")
     
     return race_result
 
@@ -105,7 +114,7 @@ def save_game(driver_name, driver, team_name, team):
     
     with open(filename, "w") as file:
         json.dump(save_data, file)
-    print(f"Game saved as {filename}!")
+    st.write(f"Game saved as {filename}!")
 
 # Loading the game state from a file
 def load_game(driver_name, team_name):
@@ -114,26 +123,26 @@ def load_game(driver_name, team_name):
     if os.path.exists(filename):
         with open(filename, "r") as file:
             save_data = json.load(file)
-        print(f"Game loaded from {filename}!")
+        st.write(f"Game loaded from {filename}!")
         return save_data
     else:
-        print("No save file found.")
+        st.write("No save file found.")
         return None
 
 # Main Game Function
 def main():
-    print("Welcome to F1 Career Simulator!")
+    st.title("F1 Career Simulator")
     
     # Choose to create a custom driver or use an existing one
-    choice = input("Do you want to create your own driver? (y/n): ")
-    if choice.lower() == 'y':
+    choice = st.radio("Do you want to create your own driver?", ("Yes", "No"))
+    if choice == "Yes":
         driver = create_driver()
     else:
         driver = drivers["Max Verstappen"]  # Default to Max Verstappen if no custom driver
     
     # Choose to create a custom team or use an existing one
-    choice = input("Do you want to create your own team? (y/n): ")
-    if choice.lower() == 'y':
+    choice = st.radio("Do you want to create your own team?", ("Yes", "No"))
+    if choice == "Yes":
         team = create_team()
     else:
         team = teams["Red Bull Racing"]  # Default to Red Bull Racing if no custom team
@@ -141,11 +150,10 @@ def main():
     # Simulate a race
     for track in tracks:
         race_result = race(driver[list(driver.keys())[0]], team[list(team.keys())[0]], track)
-        print(f"Race result: {race_result}")
     
     # Save the game
-    save_choice = input("Do you want to save your progress? (y/n): ")
-    if save_choice.lower() == 'y':
+    save_choice = st.button("Save Game")
+    if save_choice:
         driver_name = list(driver.keys())[0]
         team_name = list(team.keys())[0]
         save_game(driver_name, driver[driver_name], team_name, team[team_name])
